@@ -1,0 +1,114 @@
+﻿<!doctype html>
+<html ng-app="DotsApp">
+<head>
+    <meta charset="utf-8">
+</head>
+<body ng-controller="DotsController">
+    <div>
+        <h1> Список точек </h1>
+    </div>
+    <div>
+        <div class="form">
+            <form action="javascript:void(0);" method="POST" onsubmit="addItem()">
+                <input id="x" type="number" ng-model="x" placeholder="Введите x" />
+                <input id="y" type="number" ng-model="y" placeholder="Введите y" />
+                <input type="hidden" id="edit-id">
+                <button id="Add" ng-click="addItem(x, y)" type="submit">Добавить</button>
+            </form>
+            <form action="javascript:void(0);" method="GET" onsubmit="sort()">
+                <button id="srvr" ng-click="sortOnServer()" type="submit">Отстортировать на сервере и вывести</button>
+            </form>
+            <button id="clnt" ng-click="sortOnClient()">Отстортировать на клиенте и вывести</button>
+        </div>
+
+        <table width="100" border="1">
+            <thead>
+                <tr>
+                    <th>X</th>
+                    <th>Y</th>
+                </tr>
+            </thead>
+            <tbody id="dots">
+                <tr ng-repeat="item in list.items">
+                    <td>{{item.x}}</td>
+                    <td>{{item.y}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <canvas id="canvas" height=600 width=800></canvas>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script src="site.js"></script>
+    <script>
+        var model = { items: [] };
+        var dots = [];
+        var DotsApp = angular.module("DotsApp", []);
+        DotsApp.controller("DotsController", function ($scope) {
+            $scope.list = model;
+            $scope.addItem = function (x, y) {
+                x = parseFloat(x); // преобразуем введенные значения к числу
+                y = parseFloat(y);
+                if (!isNaN(x) && !isNaN(y)) // если поля не пустые, то добавляем
+                {
+                    $scope.list.items.push({ x: x, y: y });
+                    dots[dots.length] = { x: x, y: y };
+                    console.log("added " + x + " " + y);
+                }
+            }
+
+            $scope.sortOnClient = function () {
+                dots.sort(function compare(a, b) {
+                    return a.x - b.x;
+                });
+                Draw(dots);
+                $("#dots").empty();
+                for (var i = 0; i < data.length; i++) {
+                    deleteItem(data[i].id);
+                }
+
+            }
+
+            Draw = function (dots_list) {
+                dots_list = dots;
+                var drawingCanvas = document.getElementById('canvas');
+                if (drawingCanvas && drawingCanvas.getContext) {
+                    var context = drawingCanvas.getContext('2d');
+                    context.strokeStyle = "#0095ff";
+                    context.fillStyle = "#ddfaff";
+                    context.fillRect(0, 0, 800, 600);
+
+                    context.strokeStyle = "#000000";
+                    context.lineWidth = 1;
+                    context.beginPath();
+                    context.moveTo(drawingCanvas.clientWidth / 2, 0);
+                    context.lineTo(drawingCanvas.clientWidth / 2, drawingCanvas.clientHeight);
+                    context.stroke();
+                    context.moveTo(0, drawingCanvas.clientHeight / 2);
+                    context.lineTo(drawingCanvas.clientWidth, drawingCanvas.clientHeight / 2);
+                    context.stroke();
+                    context.lineWidth = 2;
+                    context.beginPath();
+                    for (var i = 1; i < dots_list.length; i++) {
+                        context.moveTo(400 + dots_list[i - 1].x, 300 - dots_list[i - 1].y);
+                        context.lineTo(400 + dots_list[i].x, 300 - dots_list[i].y);
+                        context.stroke();
+                    }
+                    context.closePath();
+
+                    context.fillStyle = "#0900d2";
+                    for (var i = 0; i < dots_list.length; i++) {
+                        context.beginPath();
+                        context.arc(400 + dots_list[i].x, 300 - dots_list[i].y, 5, 0, Math.PI * 2, true);
+                        context.closePath();
+                        context.fill();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
